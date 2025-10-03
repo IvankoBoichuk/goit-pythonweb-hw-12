@@ -14,7 +14,7 @@ class Settings(BaseModel):
     access_token_expire_minutes: int = 30
     
     # Database
-    database_url: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:567234@postgres:5432/hw10")
+    database_url: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:567234@postgres:5432/hw12")
     
     # App settings
     app_name: str = "Contacts API"

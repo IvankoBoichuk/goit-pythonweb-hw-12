@@ -1,4 +1,4 @@
-# GoIT Python Web HW-10
+# GoIT Python Web HW-12
 
 FastAPI contacts management application with PostgreSQL database and JWT Authentication.
 

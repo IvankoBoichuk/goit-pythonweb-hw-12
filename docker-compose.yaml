@@ -15,7 +15,7 @@ services:
   postgres:
     image: postgres:12
     environment:
-      POSTGRES_DB: hw10
+      POSTGRES_DB: hw12
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 567234
       POSTGRES_HOST_AUTH_METHOD: md5
@@ -42,7 +42,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql+psycopg2://postgres:567234@postgres:5432/hw10?sslmode=disable
+      - DATABASE_URL=postgresql+psycopg2://postgres:567234@postgres:5432/hw12?sslmode=disable
       - REDIS_URL=redis://redis:6379
     restart: unless-stopped
 
