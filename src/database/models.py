@@ -7,10 +7,26 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     DateTime,
+    Enum,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+import enum
 from .db import Base
+
+
+class UserRole(enum.Enum):
+    """User role enumeration for access control.
+
+    Defines different user roles with hierarchical permissions:
+    - USER: Basic user with access to own resources
+    - MODERATOR: Enhanced permissions for content moderation
+    - ADMIN: Full administrative access to all resources
+    """
+
+    USER = "user"
+    MODERATOR = "moderator"
+    ADMIN = "admin"
 
 
 class User(Base):
@@ -46,6 +62,7 @@ class User(Base):
     reset_token_expires = Column(
         DateTime, nullable=True
     )  # Password reset token expiration
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)  # User role
 
     # Relationship with contacts
     contacts = relationship("Contact", back_populates="owner")

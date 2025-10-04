@@ -414,6 +414,203 @@ class CacheService:
             logger.error(f"Failed to invalidate reset token: {e}")
             return False
 
+    # === Методи для кешування ролей ===
+
+    def cache_user_role(
+        self, user_id: int, role: str, ttl: timedelta = timedelta(minutes=15)
+    ) -> bool:
+        """Кешує роль користувача для швидкої перевірки прав доступу.
+
+        Args:
+            user_id (int): ID користувача
+            role (str): Роль користувача (user, moderator, admin)
+            ttl (timedelta): Час життя кешу (за замовчуванням 15 хвилин)
+
+        Returns:
+            bool: True якщо успішно закешовано, False в іншому випадку
+        """
+        if not self.cache_enabled or not self.redis_client:
+            return False
+
+        try:
+            key = self._generate_key("user_role", str(user_id))
+            ttl_seconds = int(ttl.total_seconds())
+
+            role_data = {
+                "role": role,
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+                "user_id": user_id,
+            }
+
+            self.redis_client.setex(key, ttl_seconds, json.dumps(role_data))
+            logger.debug(f"Cached role {role} for user {user_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to cache role for user {user_id}: {e}")
+            return False
+
+    def get_user_role_cache(self, user_id: int) -> Optional[str]:
+        """Отримує роль користувача з кешу.
+
+        Args:
+            user_id (int): ID користувача
+
+        Returns:
+            Optional[str]: Роль користувача якщо знайдено в кеші, None в іншому випадку
+        """
+        if not self.cache_enabled or not self.redis_client:
+            return None
+
+        try:
+            key = self._generate_key("user_role", str(user_id))
+            cached_data = self.redis_client.get(key)
+
+            if cached_data:
+                role_data = json.loads(cached_data)
+                logger.debug(
+                    f"Found cached role {role_data.get('role')} for user {user_id}"
+                )
+                return role_data.get("role")
+
+        except Exception as e:
+            logger.error(f"Failed to get role for user {user_id} from cache: {e}")
+
+        return None
+
+    def invalidate_user_role_cache(self, user_id: int) -> bool:
+        """Інвалідує кеш ролі користувача.
+
+        Args:
+            user_id (int): ID користувача
+
+        Returns:
+            bool: True якщо успішно інвалідовано, False в іншому випадку
+        """
+        if not self.cache_enabled or not self.redis_client:
+            return False
+
+        try:
+            key = self._generate_key("user_role", str(user_id))
+            deleted = self.redis_client.delete(key)
+            logger.debug(f"Invalidated role cache for user {user_id}")
+            return deleted > 0
+
+        except Exception as e:
+            logger.error(f"Failed to invalidate role cache for user {user_id}: {e}")
+            return False
+
+    def cache_admin_action(
+        self,
+        admin_id: int,
+        action: str,
+        target_user_id: int,
+        details: Optional[str] = None,
+    ) -> bool:
+        """Кешує адміністраторську дію для аудиту.
+
+        Args:
+            admin_id (int): ID адміністратора
+            action (str): Тип дії
+            target_user_id (int): ID користувача, на якого направлена дія
+            details (Optional[str]): Додаткові деталі
+
+        Returns:
+            bool: True якщо успішно закешовано, False в іншому випадку
+        """
+        if not self.cache_enabled or not self.redis_client:
+            return False
+
+        try:
+            # Створюємо ключ з timestamp для унікальності
+            timestamp = int(datetime.now(timezone.utc).timestamp())
+            key = self._generate_key("admin_action", f"{admin_id}_{timestamp}")
+
+            action_data = {
+                "admin_id": admin_id,
+                "action": action,
+                "target_user_id": target_user_id,
+                "details": details,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+
+            # Зберігаємо на 24 години для аудиту
+            self.redis_client.setex(key, 86400, json.dumps(action_data))
+            logger.info(
+                f"Cached admin action: {action} by admin {admin_id} on user {target_user_id}"
+            )
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to cache admin action: {e}")
+            return False
+
+    def get_recent_admin_actions(
+        self, admin_id: Optional[int] = None, limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """Отримує останні адміністраторські дії.
+
+        Args:
+            admin_id (Optional[int]): Фільтр по ID адміністратора
+            limit (int): Максимальна кількість записів
+
+        Returns:
+            List[Dict]: Список адміністраторських дій
+        """
+        if not self.cache_enabled or not self.redis_client:
+            return []
+
+        try:
+            pattern = self._generate_key("admin_action", "*")
+            keys = self.redis_client.keys(pattern)
+
+            actions = []
+            for key in keys[:limit]:  # Обмежуємо кількість
+                try:
+                    cached_data = self.redis_client.get(key)
+                    if cached_data:
+                        action_data = json.loads(cached_data)
+
+                        # Фільтруємо по admin_id якщо потрібно
+                        if admin_id is None or action_data.get("admin_id") == admin_id:
+                            actions.append(action_data)
+
+                except Exception:
+                    continue
+
+            # Сортуємо по timestamp (найновіші спочатку)
+            actions.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            return actions[:limit]
+
+        except Exception as e:
+            logger.error(f"Failed to get admin actions: {e}")
+            return []
+
+    def check_role_permission(self, user_id: int, required_role: str) -> Optional[bool]:
+        """Перевіряє права доступу користувача за кешованою роллю.
+
+        Args:
+            user_id (int): ID користувача
+            required_role (str): Необхідна роль
+
+        Returns:
+            Optional[bool]: True якщо доступ дозволено, False якщо заборонено,
+                          None якщо потрібна перевірка в БД
+        """
+        cached_role = self.get_user_role_cache(user_id)
+
+        if cached_role is None:
+            # Роль не знайдена в кеші, потрібна перевірка в БД
+            return None
+
+        # Іерархія ролей: admin > moderator > user
+        role_hierarchy = {"user": 1, "moderator": 2, "admin": 3}
+
+        user_role_level = role_hierarchy.get(cached_role, 0)
+        required_role_level = role_hierarchy.get(required_role, 999)
+
+        return user_role_level >= required_role_level
+
 
 # Глобальний екземпляр сервісу кешування
 cache_service = CacheService()

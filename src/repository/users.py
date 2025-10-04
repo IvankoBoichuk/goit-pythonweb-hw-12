@@ -176,3 +176,140 @@ class UserRepository:
         db.commit()
         db.refresh(user)
         return user
+
+    @staticmethod
+    def update_user_role(db: Session, user_id: int, new_role: str) -> Optional[User]:
+        """Update user's role.
+
+        Args:
+            db (Session): Database session
+            user_id (int): User's ID
+            new_role (str): New role (user, moderator, admin)
+
+        Returns:
+            Optional[User]: Updated user if found, None otherwise
+        """
+        from src.database.models import UserRole
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+
+        try:
+            # Convert string to UserRole enum
+            role_enum = UserRole(new_role)
+            user.role = role_enum
+            db.commit()
+            db.refresh(user)
+            return user
+        except ValueError:
+            # Invalid role value
+            return None
+
+    @staticmethod
+    def get_users_by_role(
+        db: Session, role: str, skip: int = 0, limit: int = 100
+    ) -> list[User]:
+        """Get users by role with pagination.
+
+        Args:
+            db (Session): Database session
+            role (str): Role to filter by
+            skip (int): Number of records to skip
+            limit (int): Maximum number of records to return
+
+        Returns:
+            List[User]: List of users with specified role
+        """
+        from src.database.models import UserRole
+
+        try:
+            role_enum = UserRole(role)
+            return (
+                db.query(User)
+                .filter(User.role == role_enum)
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+        except ValueError:
+            return []
+
+    @staticmethod
+    def get_all_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
+        """Get all users with pagination.
+
+        Args:
+            db (Session): Database session
+            skip (int): Number of records to skip
+            limit (int): Maximum number of records to return
+
+        Returns:
+            List[User]: List of all users
+        """
+        return db.query(User).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def get_users_count(db: Session) -> int:
+        """Get total number of users.
+
+        Args:
+            db (Session): Database session
+
+        Returns:
+            int: Total number of users
+        """
+        return db.query(User).count()
+
+    @staticmethod
+    def update_user_status(
+        db: Session, user_id: int, is_active: bool
+    ) -> Optional[User]:
+        """Update user's active status.
+
+        Args:
+            db (Session): Database session
+            user_id (int): User's ID
+            is_active (bool): New active status
+
+        Returns:
+            Optional[User]: Updated user if found, None otherwise
+        """
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+
+        user.is_active = is_active
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def search_users(
+        db: Session, search_term: str, skip: int = 0, limit: int = 100
+    ) -> list[User]:
+        """Search users by username or email.
+
+        Args:
+            db (Session): Database session
+            search_term (str): Term to search for in username or email
+            skip (int): Number of records to skip
+            limit (int): Maximum number of records to return
+
+        Returns:
+            List[User]: List of matching users
+        """
+        from sqlalchemy import or_
+
+        return (
+            db.query(User)
+            .filter(
+                or_(
+                    User.username.ilike(f"%{search_term}%"),
+                    User.email.ilike(f"%{search_term}%"),
+                )
+            )
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )

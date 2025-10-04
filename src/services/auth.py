@@ -247,3 +247,131 @@ def get_current_verified_user(current_user: User = Depends(get_current_active_us
             detail="Email not verified. Please check your email and verify your account.",
         )
     return current_user
+
+
+# Role-based authentication functions
+
+
+def require_role(required_role: str):
+    """Decorator factory for role-based access control with caching.
+
+    Args:
+        required_role (str): The minimum required role (user, moderator, admin)
+
+    Returns:
+        Function: Dependency function that checks user role
+    """
+
+    def role_dependency(current_user: User = Depends(get_current_active_user)):
+        from src.services.cache import cache_service
+
+        # Try cache first for performance
+        cached_permission = cache_service.check_role_permission(
+            current_user.id, required_role
+        )
+
+        if cached_permission is not None:
+            if not cached_permission:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Access denied. Required role: {required_role}, your role: {current_user.role.value}",
+                )
+            return current_user
+
+        # Cache miss - check role and update cache
+        role_hierarchy = {"user": 1, "moderator": 2, "admin": 3}
+
+        user_role_level = role_hierarchy.get(current_user.role.value, 0)
+        required_role_level = role_hierarchy.get(required_role, 999)
+
+        # Cache the user's role for future checks
+        cache_service.cache_user_role(current_user.id, current_user.role.value)
+
+        if user_role_level < required_role_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required role: {required_role}, your role: {current_user.role.value}",
+            )
+        return current_user
+
+    return role_dependency
+
+
+def get_current_admin(current_user: User = Depends(get_current_active_user)):
+    """Get current user if they have admin role.
+
+    Raises:
+        HTTPException: If user is not admin
+
+    Returns:
+        User: Current user with admin privileges
+    """
+    from src.database.models import UserRole
+
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
+    return current_user
+
+
+def get_current_moderator(current_user: User = Depends(get_current_active_user)):
+    """Get current user if they have moderator or admin role.
+
+    Raises:
+        HTTPException: If user is not moderator or admin
+
+    Returns:
+        User: Current user with moderator+ privileges
+    """
+    from src.database.models import UserRole
+
+    allowed_roles = [UserRole.MODERATOR, UserRole.ADMIN]
+    if current_user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Moderator access required"
+        )
+    return current_user
+
+
+def check_user_role(user: User, required_role: str) -> bool:
+    """Check if user has sufficient role privileges.
+
+    Args:
+        user (User): User to check
+        required_role (str): Required role level
+
+    Returns:
+        bool: True if user has sufficient privileges
+    """
+    role_hierarchy = {"user": 1, "moderator": 2, "admin": 3}
+
+    user_role_level = role_hierarchy.get(user.role.value, 0)
+    required_role_level = role_hierarchy.get(required_role, 999)
+
+    return user_role_level >= required_role_level
+
+
+def require_admin_or_self(target_user_id: int):
+    """Dependency that allows access if user is admin or accessing their own data.
+
+    Args:
+        target_user_id (int): ID of the user being accessed
+
+    Returns:
+        Function: Dependency function
+    """
+
+    def admin_or_self_dependency(current_user: User = Depends(get_current_active_user)):
+        from src.database.models import UserRole
+
+        # Allow if user is admin or accessing their own data
+        if current_user.role == UserRole.ADMIN or current_user.id == target_user_id:
+            return current_user
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Admin access required or you can only access your own data.",
+        )
+
+    return admin_or_self_dependency

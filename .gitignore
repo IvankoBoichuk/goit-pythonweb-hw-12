@@ -1,2 +1,4 @@
-/postgres-data
+postgres-data/
 .env
+.venv
+__pycache__/
