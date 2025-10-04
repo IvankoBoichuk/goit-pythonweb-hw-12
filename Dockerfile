@@ -14,8 +14,8 @@ RUN pip install --upgrade pip
 # Спочатку скопіюємо тільки pyproject.toml для кешування шарів
 COPY pyproject.toml .
 
-# Встановимо залежності з pyproject.toml
-RUN pip install -e .
+# Встановимо залежності з pyproject.toml (включаючи dev залежності для тестування)
+RUN pip install -e ".[dev]"
 
 # Скопіюємо решту файлів проекту (включаючи .env)
 COPY . .

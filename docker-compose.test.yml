@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: hw12_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 567234
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hw12_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test_network
+
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test_network
+
+  app-test:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:567234@postgres-test:5432/hw12_test
+      REDIS_URL: redis://redis-test:6379
+      SECRET_KEY: test-secret-key-for-testing-only
+      DEBUG: true
+      RATE_LIMIT_ENABLED: false
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./htmlcov:/app/htmlcov
+    working_dir: /app
+    command: >
+      sh -c "
+        python -m pytest tests/ -v 
+        --cov=src 
+        --cov-report=term-missing 
+        --cov-report=html 
+        --cov-fail-under=75
+      "
+    networks:
+      - test_network
+
+volumes:
+  test_postgres_data:
+
+networks:
+  test_network:
+    driver: bridge
