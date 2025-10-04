@@ -26,5 +26,5 @@ COPY .env* ./
 # Позначимо порт, де працює застосунок всередині контейнера (FastAPI зазвичай використовує 8000)
 EXPOSE 8000
 
-# Запустимо FastAPI застосунок з uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Запустимо FastAPI застосунок з uvicorn через Python модуль
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

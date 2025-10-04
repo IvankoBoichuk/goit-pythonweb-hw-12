@@ -1,0 +1,13 @@
+# Simple Dockerfile for building documentation
+FROM python:3.10-slim
+
+WORKDIR /docs
+
+# Install Sphinx and dependencies
+RUN pip install sphinx sphinx-rtd-theme sphinx-autodoc-typehints myst-parser
+
+# Copy documentation files
+COPY . /docs
+
+# Build documentation
+CMD ["sphinx-build", "-b", "html", ".", "_build/html"]

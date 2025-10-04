@@ -18,7 +18,21 @@ async def get_contacts(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all contacts with pagination"""
+    """Retrieve all contacts for the authenticated user with pagination.
+    
+    Args:
+        skip (int, optional): Number of records to skip for pagination. Defaults to 0.
+        limit (int, optional): Maximum number of records to return. Defaults to 100.
+        db (Session): Database session dependency
+        current_user (User): Currently authenticated user
+        
+    Returns:
+        List[ContactResponse]: List of contacts belonging to the current user
+        
+    Raises:
+        HTTPException: 401 if user is not authenticated
+        HTTPException: 500 if database error occurs
+    """
     service = ContactService(db)
     contacts = await service.get_contacts(skip=skip, limit=limit)
     return contacts

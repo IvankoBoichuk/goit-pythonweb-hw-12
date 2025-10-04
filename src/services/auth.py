@@ -23,19 +23,57 @@ security = HTTPBearer()
 
 
 class AuthService:
+    """Authentication service for handling password hashing, JWT tokens, and user verification.
+    
+    This service provides static methods for:
+    - Password hashing and verification using PBKDF2-SHA256
+    - JWT access token creation and verification
+    - Email verification token generation
+    """
+    
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against its hash."""
+        """Verify a plain text password against its hash.
+        
+        Args:
+            plain_password (str): The plain text password to verify
+            hashed_password (str): The hashed password to compare against
+            
+        Returns:
+            bool: True if password matches hash, False otherwise
+        """
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod
     def get_password_hash(password: str) -> str:
-        """Hash a password."""
+        """Generate a secure hash for a plain text password.
+        
+        Uses PBKDF2-SHA256 algorithm for password hashing.
+        
+        Args:
+            password (str): The plain text password to hash
+            
+        Returns:
+            str: The hashed password string
+        """
         return pwd_context.hash(password)
     
     @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-        """Create JWT access token."""
+        """Create a JWT access token with expiration.
+        
+        Args:
+            data (dict): The payload data to encode in the token
+            expires_delta (Optional[timedelta]): Custom expiration time. 
+                If None, uses default from settings.
+                
+        Returns:
+            str: The encoded JWT access token
+            
+        Note:
+            Token includes 'exp' claim for expiration time and is signed with
+            the application's secret key using HS256 algorithm.
+        """
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.now(timezone.utc) + expires_delta

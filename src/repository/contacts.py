@@ -8,11 +8,37 @@ from src.schemas import ContactCreate, ContactUpdate
 
 
 class ContactRepository:
+    """Repository for contact data access operations.
+    
+    Provides async methods for CRUD operations on contacts with proper
+    database session management and user context isolation.
+    
+    Attributes:
+        db (Session): SQLAlchemy database session
+    """
+    
     def __init__(self, db: Session):
+        """Initialize repository with database session.
+        
+        Args:
+            db (Session): SQLAlchemy database session
+        """
         self.db = db
 
     async def get_contacts(self, skip: int = 0, limit: int = 100) -> List[Contact]:
-        """Get all contacts with pagination"""
+        """Retrieve contacts with pagination support.
+        
+        Args:
+            skip (int, optional): Number of records to skip. Defaults to 0.
+            limit (int, optional): Maximum number of records to return. Defaults to 100.
+            
+        Returns:
+            List[Contact]: List of contact objects
+            
+        Note:
+            This method should be called with user filtering to ensure
+            proper data isolation between users.
+        """
         return self.db.query(Contact).offset(skip).limit(limit).all()
 
     async def get_contact_by_id(self, contact_id: int) -> Optional[Contact]:
@@ -24,7 +50,21 @@ class ContactRepository:
         return self.db.query(Contact).filter(Contact.email == email).first()
 
     async def create_contact(self, contact: ContactCreate) -> Contact:
-        """Create a new contact"""
+        """Create a new contact in the database.
+        
+        Args:
+            contact (ContactCreate): Pydantic model with contact data
+            
+        Returns:
+            Contact: The created contact object with assigned ID
+            
+        Raises:
+            SQLAlchemyError: If database operation fails
+            
+        Note:
+            The user_id field must be set separately by the calling service
+            to ensure proper user context isolation.
+        """
         db_contact = Contact(
             first_name=contact.first_name,
             last_name=contact.last_name,

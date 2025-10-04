@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; FastAPI Contacts API 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            FastAPI Contacts API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Project Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">FastAPI Contacts API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Documentation</p>
+<p>This directory contains the Sphinx documentation for the FastAPI Contacts API.</p>
+<p>## Building Documentation</p>
+<p>### Using Docker (Recommended)</p>
+<p>Run the build script:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# On Windows
+build-docs.bat</p>
+<p># On Linux/Mac
+./build-docs.sh
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### Manual Build</p>
+<p>If you have Python and Sphinx installed locally:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">cd</span> <span class="pre">docs</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">../pyproject.toml[docs]</span>
+<span class="pre">sphinx-build</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">.</span> <span class="pre">_build/html</span>
+<span class="pre">`</span></code></p>
+<p>### Using Make</p>
+<p>If you have Make installed:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">cd</span> <span class="pre">docs</span>
+<span class="pre">make</span> <span class="pre">html</span>
+<span class="pre">`</span></code></p>
+<p>## Viewing Documentation</p>
+<p>After building, open <cite>docs/_build/html/index.html</cite> in your browser.</p>
+<p>## Documentation Structure</p>
+<ul class="simple">
+<li><p><cite>index.rst</cite> - Main documentation index</p></li>
+<li><p><cite>overview.rst</cite> - Project architecture and overview</p></li>
+<li><p><cite>quickstart.rst</cite> - Getting started guide</p></li>
+<li><p><cite>api/</cite> - API endpoint documentation</p></li>
+<li><p><cite>modules/</cite> - Code documentation with autodoc</p></li>
+<li><p><cite>conf.py</cite> - Sphinx configuration</p></li>
+</ul>
+<p>## Adding Documentation</p>
+<p>### Docstrings</p>
+<p>Add Google-style docstrings to your code:</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+def my_function(param1: str, param2: int = 0) -&gt; bool:</p>
+<blockquote>
+<div><p>“””Short description of the function.</p>
+<p>Longer description if needed.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>param1 (str): Description of param1
+param2 (int, optional): Description of param2. Defaults to 0.</p>
+</dd>
+<dt>Returns:</dt><dd><p>bool: Description of return value</p>
+</dd>
+<dt>Raises:</dt><dd><p>ValueError: Description of when this error is raised</p>
+</dd>
+</dl>
+<p>“””
+return True</p>
+</div></blockquote>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### New Modules</p>
+<p>Add new modules to the appropriate <cite>.rst</cite> file in <cite>modules/</cite>:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>rst
+.. automodule:: src.new_module</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">members<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">undoc-members<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">show-inheritance<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</div></blockquote>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### API Documentation</p>
+<p>Add new endpoints to the appropriate file in <cite>api/</cite> using HTTP directive format.</p>
+<p>## Dependencies</p>
+<p>Documentation dependencies are defined in <cite>pyproject.toml</cite>:</p>
+<ul class="simple">
+<li><p><cite>sphinx</cite> - Documentation generator</p></li>
+<li><p><cite>sphinx-rtd-theme</cite> - Read the Docs theme</p></li>
+<li><p><cite>sphinx-autodoc-typehints</cite> - Type hints support</p></li>
+<li><p><cite>myst-parser</cite> - Markdown support</p></li>
+</ul>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ivan Boichuk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
