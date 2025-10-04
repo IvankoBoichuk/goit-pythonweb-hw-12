@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Text, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from .db import Base
@@ -31,6 +31,8 @@ class User(Base):
     is_verified = Column(Boolean, default=False)  # Email verification status
     verification_token = Column(String(255), nullable=True)  # Email verification token
     avatar_url = Column(String(500), nullable=True)  # URL to avatar image
+    reset_token = Column(String(255), nullable=True)  # Password reset token
+    reset_token_expires = Column(DateTime, nullable=True)  # Password reset token expiration
     
     # Relationship with contacts
     contacts = relationship("Contact", back_populates="owner")

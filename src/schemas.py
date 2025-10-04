@@ -54,3 +54,13 @@ class ContactResponse(ContactBase):
     
     class Config:
         from_attributes = True
+
+# Password reset schemas
+class PasswordResetRequest(BaseModel):
+    """Schema for requesting a password reset"""
+    email: EmailStr
+
+class PasswordReset(BaseModel):
+    """Schema for resetting password with token"""
+    token: str
+    new_password: str

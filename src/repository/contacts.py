@@ -45,9 +45,20 @@ class ContactRepository:
         """Get contact by ID"""
         return self.db.query(Contact).filter(Contact.id == contact_id).first()
 
-    async def get_contact_by_email(self, email: str) -> Optional[Contact]:
-        """Get contact by email"""
-        return self.db.query(Contact).filter(Contact.email == email).first()
+    async def get_contact_by_email(self, email: str, user_id: int = None) -> Optional[Contact]:
+        """Get contact by email, optionally filtered by user"""
+        query = self.db.query(Contact).filter(Contact.email == email)
+        if user_id is not None:
+            query = query.filter(Contact.user_id == user_id)
+        return query.first()
+    
+    async def get_contacts_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[Contact]:
+        """Get all contacts for a specific user with pagination"""
+        return (self.db.query(Contact)
+                .filter(Contact.user_id == user_id)
+                .offset(skip)
+                .limit(limit)
+                .all())
 
     async def create_contact(self, contact: ContactCreate) -> Contact:
         """Create a new contact in the database.
@@ -71,7 +82,8 @@ class ContactRepository:
             email=contact.email,
             phone=contact.phone,
             birthday=contact.birthday,
-            additional_info=contact.additional_info
+            additional_info=contact.additional_info,
+            user_id=getattr(contact, 'user_id', None)
         )
         self.db.add(db_contact)
         self.db.commit()
@@ -98,9 +110,10 @@ class ContactRepository:
             return True
         return False
 
-    async def search_contacts(self, query: str) -> List[Contact]:
-        """Search contacts by first name, last name, or email"""
+    async def search_contacts(self, query: str, user_id: int) -> List[Contact]:
+        """Search contacts by first name, last name, or email for specific user"""
         return self.db.query(Contact).filter(
+            Contact.user_id == user_id,
             or_(
                 Contact.first_name.ilike(f"%{query}%"),
                 Contact.last_name.ilike(f"%{query}%"),
@@ -108,14 +121,19 @@ class ContactRepository:
             )
         ).all()
 
-    async def get_upcoming_birthdays(self, days_ahead: int = 7) -> List[Contact]:
-        """Get contacts with birthdays in the next N days"""
+    async def get_upcoming_birthdays(self, days_ahead: int = 7, user_id: int = None) -> List[Contact]:
+        """Get contacts with birthdays in the next N days for specific user"""
         today = date.today()
         future_date = today + timedelta(days=days_ahead)
         
-        return self.db.query(Contact).filter(
+        query = self.db.query(Contact).filter(
             and_(
                 Contact.birthday >= today,
                 Contact.birthday <= future_date
             )
-        ).all()
+        )
+        
+        if user_id:
+            query = query.filter(Contact.user_id == user_id)
+            
+        return query.all()

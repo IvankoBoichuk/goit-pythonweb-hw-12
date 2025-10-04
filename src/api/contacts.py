@@ -34,7 +34,7 @@ async def get_contacts(
         HTTPException: 500 if database error occurs
     """
     service = ContactService(db)
-    contacts = await service.get_contacts(skip=skip, limit=limit)
+    contacts = await service.get_contacts(user_id=current_user.id, skip=skip, limit=limit)
     return contacts
 
 @router.get("/contacts/{contact_id}", response_model=ContactResponse)
@@ -45,7 +45,7 @@ async def get_contact(
 ):
     """Get a specific contact by ID"""
     service = ContactService(db)
-    contact = await service.get_contact(contact_id)
+    contact = await service.get_contact(contact_id, user_id=current_user.id)
     if not contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -61,7 +61,7 @@ async def create_contact(
 ):
     """Create a new contact"""
     service = ContactService(db)
-    return await service.create_contact(contact)
+    return await service.create_contact(contact, user_id=current_user.id)
 
 @router.put("/contacts/{contact_id}", response_model=ContactResponse)
 async def update_contact(
@@ -72,7 +72,7 @@ async def update_contact(
 ):
     """Update an existing contact"""
     service = ContactService(db)
-    updated_contact = await service.update_contact(contact_id, contact)
+    updated_contact = await service.update_contact(contact_id, contact, user_id=current_user.id)
     if not updated_contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +88,7 @@ async def delete_contact(
 ):
     """Delete a contact"""
     service = ContactService(db)
-    deleted = await service.delete_contact(contact_id)
+    deleted = await service.delete_contact(contact_id, user_id=current_user.id)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -103,7 +103,7 @@ async def search_contacts(
 ):
     """Search contacts by first name, last name, or email"""
     service = ContactService(db)
-    contacts = await service.search_contacts(query)
+    contacts = await service.search_contacts(query, user_id=current_user.id)
     return contacts
 
 @router.get("/contacts/birthdays/upcoming", response_model=List[ContactResponse])
@@ -114,5 +114,5 @@ async def get_upcoming_birthdays(
 ):
     """Get contacts with birthdays in the next N days (default 7)"""
     service = ContactService(db)
-    contacts = await service.get_upcoming_birthdays(days_ahead)
+    contacts = await service.get_upcoming_birthdays(days_ahead, user_id=current_user.id)
     return contacts

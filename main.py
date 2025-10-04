@@ -4,6 +4,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from src.api.contacts import router as contacts_router
 from src.api.auth import router as auth_router
+from src.api.cache import router as cache_router
 from src.database.db import engine
 from src.database.models import Base
 from src.services.rate_limiter import limiter, custom_rate_limit_handler
@@ -37,6 +38,7 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(contacts_router, prefix="/api", tags=["contacts"])
+app.include_router(cache_router, prefix="/api", tags=["cache"])
 
 @app.get("/")
 async def root():
