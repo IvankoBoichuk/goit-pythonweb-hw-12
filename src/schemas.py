@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import date
 from typing import Optional
 
+
 # User schemas
 class UserBase(BaseModel):
     username: str
@@ -9,26 +10,32 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserResponse(UserBase):
     id: int
     is_active: bool = True
-    
+
     class Config:
         from_attributes = True
+
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: Optional[str] = None
+
 
 # Contact schemas
 class ContactBase(BaseModel):
@@ -39,8 +46,10 @@ class ContactBase(BaseModel):
     birthday: date
     additional_info: Optional[str] = None
 
+
 class ContactCreate(ContactBase):
     pass
+
 
 class ContactUpdate(ContactBase):
     first_name: Optional[str] = None
@@ -49,18 +58,23 @@ class ContactUpdate(ContactBase):
     birthday: Optional[date] = None
     phone: Optional[str] = None
 
+
 class ContactResponse(ContactBase):
     id: int
-    
+
     class Config:
         from_attributes = True
+
 
 # Password reset schemas
 class PasswordResetRequest(BaseModel):
     """Schema for requesting a password reset"""
+
     email: EmailStr
+
 
 class PasswordReset(BaseModel):
     """Schema for resetting password with token"""
+
     token: str
     new_password: str
